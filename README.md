@@ -15,7 +15,7 @@ Some world data mining goodness.
 
 It's meant to be used in a Jupyter notebook (or anything interactive).
 
-```
+```python
 from kleptes import *   # also imports pandas as pd. you'll thank me
 
 who_dims()

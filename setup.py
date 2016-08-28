@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-VERSION = "0.1.dev666"
+VERSION = "0.2"
 
 
 def read(fname):
@@ -21,5 +21,5 @@ setup(
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
-    install_requires=["requests", "pandas", "redis"],
+    install_requires=["requests", "pandas", "redis", "bs4"],
 )

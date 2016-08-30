@@ -7,8 +7,11 @@ import requests
 from redis import StrictRedis
 
 
-wnf = {"a_land_area_kmsq_2012"}
-
+def reformat_numbers(d):
+    for f in {"a_land_area_kmsq_2012", "d_year"}:
+        if f in d:
+            n = d[f].replace(",", "")
+            d[f] = int(n) if "." not in n else float(n)
 
 def lddf(l, full=False):
     if full:
@@ -16,9 +19,7 @@ def lddf(l, full=False):
         for r in l:
             if "attr" in r:
                 a = {"a_" + d["category"].lower(): d["value"] for d in r["attr"]}
-                for f in wnf:
-                    if f in a:
-                        a[f] = a[f].replace(",", "")
+                reformat_numbers(a)
                 r.pop("attr")
                 d.append(dict(r, **a))
         return pd.DataFrame(d)
@@ -46,6 +47,7 @@ def parse_ds(ds, names=True):
         e = {}
         dim = {"d_" + d["category"].lower(): d["code"] for d in x["Dim"]}
         val = {"v_{k}".format(k=k): x["value"][k] for k in {"high", "low", "numeric"} if k in x["value"]}
+        reformat_numbers(dim)
         x.pop("Dim")
         x.pop("value")
         e.update(x)
@@ -62,19 +64,21 @@ def parse_ds(ds, names=True):
     return pd.DataFrame(l)
 
 
-def who_get(string="", force=False, expire=259200, raw=False):
+def who_get(string="", filter_=None, force=False, expire=259200, raw=False):
     """
     Low-level function to get JSON datasets from the WHO database.
 
     :param string: the thingy to be appended to the url (e.g. 'GHO/blah').
+    :param filter_: a filter as per API support (ugh underscore)
     :param force: ignores cached items (but re-caches them)
     :param expire: self-explanatory
     :param raw: returns the JSON dataset as a raw string (useful to debug stuff).
     :return: the requested data set
     """
-    url = "http://apps.who.int/gho/athena/api/{}?format=json".format(string)
+    filter_ = "&filter={}".format(filter_) if filter_ is not None else ""
+    url = "http://apps.who.int/gho/athena/api/{}?format=json{}".format(string, filter_)
     r = StrictRedis()
-    key = "WHO|{}".format(string)
+    key = "WHO|{}|{}".format(string, filter_)
 
     if not force and r.exists(key):
         t = r.get(key).decode("utf-8")
@@ -113,10 +117,10 @@ def who_dims(name=None, force=False, expire=259200, full=False):
     elif "*" not in name:
         return lddf(dims, full).query("label == @name or display == @name")
     else:
-        return lddf(pmatch(who_get("", force, expire)["dimension"], name), full)
+        return lddf(pmatch(who_get("", force=force, expire=expire)["dimension"], name), full)
 
 
-def who_dataset(dim=None, name=None, force=False, expire=259200, raw=False, parse=True, full=False):
+def who_dataset(dim=None, name=None, filter_=None, force=False, expire=259200, raw=False, parse=True, full=False):
     """
     Get the dataset "dim/name" from the WHO database. The cool thing is that you can do pattern search on both
     dimension and name, although if you do it on the dimension the name parameter is ignored.
@@ -127,6 +131,7 @@ def who_dataset(dim=None, name=None, force=False, expire=259200, raw=False, pars
 
     :param dim: the dimension's name
     :param name: the dataset's name
+    :param filter_: a filter as per API support
     :param force: ignores cached items (but re-caches them)
     :param expire: self-explanatory
     :param raw: returns the JSON dataset as a raw string (useful to debug stuff).
@@ -140,12 +145,13 @@ def who_dataset(dim=None, name=None, force=False, expire=259200, raw=False, pars
     elif len(dims) == 1:
         dim = dims.iloc[0]["label"]
         if name is None or name == "":
-            ds = who_get("{dim}/".format(dim=dim), force, expire)["dimension"][0]["code"]
+            ds = who_get("{dim}/".format(dim=dim), force=force, expire=expire)["dimension"][0]["code"]
         elif "*" in name:
-            ds = pmatch(who_get("{dim}/".format(dim=dim), force, expire)["dimension"][0]["code"], name)
+            ds = pmatch(who_get("{dim}/".format(dim=dim), force=force, expire=expire)["dimension"][0]["code"], name)
         else:
             # exact match
-            ds = who_get("{dim}/{name}/".format(dim=dim, name=name), force, expire, raw)
+            ds = who_get("{dim}/{name}/".format(dim=dim, name=name),
+                         filter_=filter_, force=force, expire=expire, raw=raw)
             return parse_ds(ds["fact"]) if parse and not raw else ds
         return lddf(ds, full=full) if not raw else ds
 

@@ -21,7 +21,7 @@ def _sbs(df, ascending=True, copy=True):
     _df = df.copy() if copy else df
     c = uuid.uuid4()
     _df[c] = _df.sum(axis=1)
-    _df = _df.sort(c, ascending=ascending)
+    _df = _df.sort_values(c, ascending=ascending)
     del _df[c]
     return _df
 

@@ -12,12 +12,8 @@ BASE_URL = "http://stats.oecd.org/sdmx-json"
 
 def get_index(ds):
     """Converts the index to a DatetimeIndex"""
-    v = [k["id"] for k in ds["structure"]["dimensions"]["observation"][0]["values"]]
-    try:
-        idx = pd.DatetimeIndex(v)
-    except SystemError:
-        # fucking quarters. TODO: actually fix this
-        idx = pd.Index(v)
+    v = [pd.Period(k["id"]) for k in ds["structure"]["dimensions"]["observation"][0]["values"]]
+    idx = pd.PeriodIndex(v)
     idx.name = "d"
     return idx
 

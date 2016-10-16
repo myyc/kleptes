@@ -12,8 +12,8 @@ BASE_URL = "http://stats.oecd.org/sdmx-json"
 
 def get_index(ds):
     """Converts the index to a DatetimeIndex"""
-    v = [pd.Period(k["id"]) for k in ds["structure"]["dimensions"]["observation"][0]["values"]]
-    idx = pd.PeriodIndex(v)
+    v = [pd.Period(k["id"]).start_time for k in ds["structure"]["dimensions"]["observation"][0]["values"]]
+    idx = pd.DatetimeIndex(v)
     idx.name = "d"
     return idx
 

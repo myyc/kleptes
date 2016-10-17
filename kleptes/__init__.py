@@ -7,6 +7,6 @@ import kleptes.goodies
 
 __all__ = [
     "who_dataset", "who_dims", "who_get",
-    "oecd_dataset", "oecd_dims", "oecd_inds", "oecd_md",
+    "oecd_dataset", "oecd_dims", "oecd_inds",
     "pd"
 ]

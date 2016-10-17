@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-VERSION = "0.2"
+VERSION = "0.2.1"
 
 
 def read(fname):
@@ -11,8 +11,8 @@ setup(
     name="kleptes",
     version=VERSION,
     author="myyc",
-    description="Misc utils to mine some data",
-    license="LGPL",
+    description="Goodies to mine world data",
+    license="BSD",
     keywords="data mining python jupyter who",
     packages=["kleptes"],
     long_description=read('README.md'),

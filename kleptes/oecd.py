@@ -45,7 +45,7 @@ def parseds(ds):
         idx = get_index(ds)
         _df = (
             pd.Series(l).to_frame("value").reindex(range(0, len(idx)))
-            .assign(dt=idx).assign(**kt).set_index("dt")
+                .assign(dt=idx).assign(**kt).set_index("dt")
         )
         df = _df if df is None else pd.concat((df, _df))
 
@@ -53,7 +53,8 @@ def parseds(ds):
 
 
 class SearchableDataFrame(pd.DataFrame):
-    """A DataFrame that implements a search method via __call__"""
+    """A DataFrame that implements a (pretty shit, performance-wise) search method via __call__"""
+
     @staticmethod
     def _match(rxp, s):
         if isinstance(rxp, list):
@@ -72,10 +73,12 @@ class SearchableDataFrame(pd.DataFrame):
             raise ValueError("`pattern` must be a string or a list of strings.")
 
         s = pd.Series(False, self.index)
+
+        # hic sunt leones
         for i, r in self.iterrows():
             for c in r.index:
                 if self._match(rxp, r[c].lower()):
-                    s.ix[i] = True
+                    s.loc[i] = True
                     break
         return self[s]
 
@@ -89,6 +92,13 @@ class OECDims:
 
     def __repr__(self):
         return "OECDims(\"{}\", {})".format(self._name, self._keys)
+
+    def __call__(self, pattern=None):
+        df = None
+        for k in self:
+            _df = self._d[k](pattern).assign(dim=k)
+            df = _df if df is None else pd.concat([df, _df])
+        return df[["dim", "id", "name"]]
 
     def __init__(self, md, name=""):
         self._keys = []
@@ -143,6 +153,7 @@ def oecd_md(pattern, force=False, expire=259200):
         r.expire(key, expire)
     else:
         j = json.loads(r[key].decode("utf-8"))
+
     return j
 
 

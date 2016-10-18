@@ -11,12 +11,13 @@ to figure out if a dataset has any data.
 *Requirements*
 --------------
 
+* Python 3
 * `pandas`
 * Redis (to cache stuff; defaults to localhost, hardcoded)
 * `requests`
 * `bs4` (used only in one function, don't worry)
 
-Setup as usual.
+It's on PyPI so you can simply `pip3 install kleptes`.
 
 *How do I use this?*
 --------------------

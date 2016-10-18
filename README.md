@@ -7,6 +7,8 @@ Some world data mining goodness.
 to browse.
 * *[OECD](https://www.oecd.org/)* - a complete nightmare. Takes minutes
 to figure out if a dataset has any data.
+* *[World Bank](http://www.worldbank.org/)* - lots of stuff, consistent structure,
+a bit tough to search (will improve on this).
 
 *Requirements*
 --------------
@@ -36,6 +38,7 @@ who_dataset("GHO", "*suicide*")   # fewer
 
 who_dataset("GHO", "MH_12").head()   # the thing you were looking for
 
+
 # same stuff for the OECD
 oecd_inds("*quarterly*")   # search among indicators (so much shit there)
 
@@ -46,6 +49,10 @@ oecd_dataset("qna",
              subject=["B1_GE"],
              measure="cqr",
              frequency="Q")  # as many kwargs as the dims.
+
+# same-ish stuff for the world bank
+wb_inds("*hdi*")        # get indicators like '*hdi*', find one ...
+wb_dataset("UNDP.HDI.XD", countries=["mz", "za"])
 ```
 
 Remember: *everything should be searchable*.
@@ -54,6 +61,7 @@ The exposed functions for now are:
 
 * WHO: `who_dataset`, `who_dim` and `who_get` (very low level).
 * OECD: `oecd_dataset`, `oecd_dims`, `oecd_ind`
+* World Bank: `wb_inds`, `wb_dataset` and `wb_get`.
 
 They serve different purposes so despite the name they don't do
 exactly the same thing (e.g. `who_dim` and `oecd_dims` do different stuff).

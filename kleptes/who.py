@@ -13,12 +13,14 @@ def reformat_numbers(d):
             n = d[f].replace(",", "")
             d[f] = int(n) if "." not in n else float(n)
 
+
 def lddf(l, full=False):
     if full:
         d = []
         for r in l:
             if "attr" in r:
-                a = {"a_" + d["category"].lower(): d["value"] for d in r["attr"]}
+                a = {"a_" + d["category"].lower(): d["value"] for d in
+                     r["attr"]}
                 reformat_numbers(a)
                 r.pop("attr")
                 d.append(dict(r, **a))
@@ -31,7 +33,8 @@ def pmatch(l, pattern):
     rxp = re.compile(fnmatch.translate(pattern.lower()))
     return [{"label": k["label"],
              "display": k["display"]} for k in l if
-            re.match(rxp, k["label"].lower()) or re.match(rxp, k["display"].lower())]
+            re.match(rxp, k["label"].lower()) or re.match(rxp, k[
+                "display"].lower())]
 
 
 def parse_ds(ds, names=True):
@@ -46,7 +49,8 @@ def parse_ds(ds, names=True):
     for x in ds:
         e = {}
         dim = {"d_" + d["category"].lower(): d["code"] for d in x["Dim"]}
-        val = {"v_{k}".format(k=k): x["value"][k] for k in {"high", "low", "numeric"} if k in x["value"]}
+        val = {"v_{k}".format(k=k): x["value"][k] for k in
+               {"high", "low", "numeric"} if k in x["value"]}
         reformat_numbers(dim)
         x.pop("Dim")
         x.pop("value")
@@ -72,11 +76,12 @@ def who_get(string="", filter_=None, force=False, expire=259200, raw=False):
     :param filter_: a filter as per API support (ugh underscore)
     :param force: ignores cached items (but re-caches them)
     :param expire: self-explanatory
-    :param raw: returns the JSON dataset as a raw string (useful to debug stuff).
+    :param raw: returns the JSON dataset as a string (useful to debug stuff).
     :return: the requested data set
     """
     filter_ = "&filter={}".format(filter_) if filter_ is not None else ""
-    url = "http://apps.who.int/gho/athena/api/{}?format=json{}".format(string, filter_)
+    url = "http://apps.who.int/gho/athena/api/{}?format=json{}".format(string,
+                                                                       filter_)
     r = StrictRedis()
     key = "WHO|{}|{}".format(string, filter_)
 
@@ -103,12 +108,13 @@ def who_get(string="", filter_=None, force=False, expire=259200, raw=False):
 
 def who_dims(name=None, force=False, expire=259200, full=False):
     """
-    Get the dimensions from the WHO database. You can do things like `who_dims("*gh*")`.
+    Get the dimensions from the WHO database. You can do things like
+    `who_dims("*gh*")`.
 
     :param name: the dimension's name (as mentioned, you can search with `*`)
     :param force: ignores cached items (but re-caches them)
     :param expire: self-explanatory
-    :param full: returns the full dataset (by default it only has label and full name).
+    :param full: if False it only returns label and full name).
     :return: the requested data set
     """
     dims = who_get()["dimension"]
@@ -117,16 +123,21 @@ def who_dims(name=None, force=False, expire=259200, full=False):
     elif "*" not in name:
         return lddf(dims, full).query("label == @name or display == @name")
     else:
-        return lddf(pmatch(who_get("", force=force, expire=expire)["dimension"], name), full)
+        return lddf(
+            pmatch(who_get("", force=force, expire=expire)["dimension"], name),
+            full)
 
 
-def who_dataset(dim=None, name=None, filter_=None, force=False, expire=259200, raw=False, parse=True, full=False):
+def who_dataset(dim=None, name=None, filter_=None, force=False, expire=259200,
+                raw=False, parse=True, full=False):
     """
-    Get the dataset "dim/name" from the WHO database. The cool thing is that you can do pattern search on both
-    dimension and name, although if you do it on the dimension the name parameter is ignored.
+    Get the dataset "dim/name" from the WHO database. The cool thing is that
+    you can do pattern search on both dimension and name, although if you do it
+    on the dimension the name parameter is ignored.
 
-    If you fix a dimension (ideally "GHO" since that's where most of the stuff is) you can do stuff like
-    `who_dataset("GHO", "*alcohol*")` and it will search for all the datasets with matching descriptions so no
+    If you fix a dimension (ideally "GHO" since that's where most of the stuff
+    is) you can do stuff like `who_dataset("GHO", "*alcohol*")` and it will
+    search for all the datasets with matching descriptions so no
     need to actually remember the ID's.
 
     :param dim: the dimension's name
@@ -145,9 +156,12 @@ def who_dataset(dim=None, name=None, filter_=None, force=False, expire=259200, r
     elif len(dims) == 1:
         dim = dims.iloc[0]["label"]
         if name is None or name == "":
-            ds = who_get("{dim}/".format(dim=dim), force=force, expire=expire)["dimension"][0]["code"]
+            ds = who_get("{dim}/".format(dim=dim), force=force, expire=expire)[
+                "dimension"][0]["code"]
         elif "*" in name:
-            ds = pmatch(who_get("{dim}/".format(dim=dim), force=force, expire=expire)["dimension"][0]["code"], name)
+            ds = pmatch(
+                who_get("{dim}/".format(dim=dim), force=force, expire=expire)[
+                    "dimension"][0]["code"], name)
         else:
             # exact match
             ds = who_get("{dim}/{name}/".format(dim=dim, name=name),

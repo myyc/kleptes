@@ -1,15 +1,15 @@
 import os
 from setuptools import setup
-
-VERSION = "0.2.1"
+from kleptes._version import __version__
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 setup(
     name="kleptes",
-    version=VERSION,
+    version=__version__,
     author="myyc",
     description="Goodies to mine world data",
     license="BSD",

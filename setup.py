@@ -1,10 +1,18 @@
-import os
 from setuptools import setup
 from kleptes._version import __version__
 
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+DESC = """
+World data mining that sucks a bit less.
+
+Currently available data sets:
+
+* World Bank
+* OECD
+* WHO
+
+Code and (minimal) documentation `here <https://github.com/myyc/kleptes/>`_.
+"""
 
 
 setup(
@@ -13,9 +21,9 @@ setup(
     author="myyc",
     description="Goodies to mine world data",
     license="BSD",
-    keywords="data mining python jupyter who",
+    keywords="data mining python pandas who oecd",
     packages=["kleptes"],
-    long_description=read('README.md'),
+    long_description=DESC,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Topic :: Utilities",

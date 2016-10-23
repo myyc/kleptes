@@ -1,5 +1,4 @@
 import re
-import fnmatch
 import json
 
 import requests
@@ -7,7 +6,7 @@ from bs4 import BeautifulSoup
 from redis import StrictRedis
 import pandas as pd
 
-from .utils import SearchableDataFrame
+from .utils import SearchableDataFrame, get_re, EXPIRE
 
 BASE_URL = "http://stats.oecd.org/sdmx-json"
 
@@ -88,7 +87,7 @@ class OECDims:
             self.__setattr__(attr, self._d[attr])
 
 
-def oecd_inds(pattern=None, force=False, expire=259200, df=True):
+def oecd_inds(pattern=None, force=False, expire=EXPIRE, df=True):
     """No way to get the indicators without scraping."""
     key = "OECD|inds"
     r = StrictRedis()
@@ -102,9 +101,9 @@ def oecd_inds(pattern=None, force=False, expire=259200, df=True):
         r[key] = json.dumps(l)
         r.expire(key, expire)
     if pattern is not None and pattern != "":
-        rxp = re.compile(fnmatch.translate(pattern.lower()))
+        rxp = get_re(pattern)
         l = {k: l[k] for k in l if
-             re.match(rxp, k.lower()) or re.match(rxp, l[k].lower())}
+             re.match(rxp, k) or re.match(rxp, l[k])}
     if df:
         d = [{"id": k, "desc": l[k]} for k in l]
         return pd.DataFrame(d, columns=["id", "desc"])
@@ -112,7 +111,7 @@ def oecd_inds(pattern=None, force=False, expire=259200, df=True):
         return l
 
 
-def oecd_md(pattern, force=False, expire=259200):
+def oecd_md(pattern, force=False, expire=EXPIRE):
     idxs = oecd_inds(pattern, df=False)
     if len(idxs) == 0:
         raise ValueError("Empty selection")
@@ -134,7 +133,7 @@ def oecd_md(pattern, force=False, expire=259200):
     return j
 
 
-def oecd_dims(pattern, force=False, expire=259200):
+def oecd_dims(pattern, force=False, expire=EXPIRE):
     md = oecd_md(pattern, force, expire)
     name = md["structure"]["name"]
     return OECDims(md["structure"]["dimensions"]["observation"], name)
@@ -144,7 +143,7 @@ def _pmise(x):
     return "+".join(x["id"])
 
 
-def oecd_dataset(idx, rawstr=None, force=False, expire=259200, raw=False,
+def oecd_dataset(idx, rawstr=None, force=False, expire=EXPIRE, raw=False,
                  **kwargs):
     if rawstr is None:
         if kwargs is None:

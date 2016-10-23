@@ -3,37 +3,39 @@ import fnmatch
 
 import pandas as pd
 
+# three days
+EXPIRE = 259200
+
+
+def get_re(pattern):
+    if type(pattern) == str:
+        return re.compile(fnmatch.translate(pattern), flags=re.IGNORECASE)
+    elif type(pattern) == list:
+        return re.compile("|".join(fnmatch.translate(pattern)),
+                          flags=re.IGNORECASE)
+    else:
+        raise ValueError("'pattern' must either be a string or a list "
+                         "(or None)")
+
 
 class SearchableDataFrame(pd.DataFrame):
-    """A DataFrame that implements a (pretty shit, performance-wise)
-    search method via __call__"""
+    """A DataFrame that implements a search method via __call__"""
 
-    @staticmethod
-    def _match(rxp, s):
-        if isinstance(rxp, list):
-            return sum(
-                [1 if re.match(r, s) is not None else 0 for r in rxp]
-            ) > 0
-        else:
-            return re.match(rxp, s)
-
-    def __call__(self, pattern=None):
+    def __call__(self, pattern=None, cols=None):
         if pattern is None:
             return self
-        if isinstance(pattern, str):
-            rxp = re.compile(fnmatch.translate(pattern.lower()))
-        elif isinstance(pattern, list):
-            rxp = [re.compile(fnmatch.translate(p.lower())) for p in pattern]
+
+        p = get_re(pattern)
+
+        if cols not in list(self.columns):
+            if cols is None:
+                _df = self.select_dtypes(["object"])
+            elif type(cols) == list:
+                _df = self[cols]
+            else:
+                raise ValueError("'cols' must be either a 'list', 'None' or "
+                                 "the name of a column.")
+            s = _df.apply(lambda x: x.str.match(p)).sum(axis=1).astype("bool")
         else:
-            raise ValueError("`pattern` must be a string or a list"
-                             "of strings.")
-
-        s = pd.Series(False, self.index)
-
-        # hic sunt leones
-        for i, r in self.iterrows():
-            for c in r.index:
-                if self._match(rxp, r[c].lower()):
-                    s.loc[i] = True
-                    break
+            s = self[cols].str.match(p)
         return self[s]

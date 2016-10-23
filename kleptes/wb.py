@@ -4,7 +4,7 @@ import itertools
 import pandas as pd
 import requests
 
-from .utils import SearchableDataFrame
+from .utils import SearchableDataFrame, EXPIRE
 
 BASE_URL = "http://api.worldbank.org"
 
@@ -12,10 +12,11 @@ BASE_URL = "http://api.worldbank.org"
 def _wb_url(x, key):
     return "{b}/{k}{c}format=json&per_page=1000&page={x}".format(
         b=BASE_URL, c="&" if "?" in key else "?", k=key,
-        x=x)
+        x=x
+    )
 
 
-def wb_get(key, expire=259200, force=False, raw=False):
+def wb_get(key, expire=EXPIRE, force=False, raw=False):
     """
     Similar to `who_get`, only the things you might get here are more
     complicated. Handles nicely outputs coming from the higher level functions
@@ -92,7 +93,7 @@ def wb_get(key, expire=259200, force=False, raw=False):
     return l
 
 
-def wb_inds(k=None, expire=259200, force=False, raw=False):
+def wb_inds(k=None, expire=EXPIRE, force=False, raw=False):
     """This function takes ages. Needs some thought."""
     ds = wb_get("indicators", force=force, expire=expire)
     return ds if raw else SearchableDataFrame(ds)(k)
@@ -100,7 +101,7 @@ def wb_inds(k=None, expire=259200, force=False, raw=False):
 
 # todo: add parameters like mrv etc.
 def wb_dataset(ind, countries="all", d1=1960, d2=2016, frequency="Y",
-               expire=259200, force=False, raw=False):
+               expire=EXPIRE, force=False, raw=False):
     if countries != "all":
         countries = ";".join(countries)
 

@@ -18,10 +18,14 @@ def _sbs(df, ascending=True, copy=True):
     :param copy: get a copy or sort in-place (default: True)
     :return: your sorted DataFrame
     """
-    if not isinstance(df, pd.DataFrame):
+    if type(df) is not pd.DataFrame:
         raise TypeError("The argument must be a DataFrame")
     _df = df.copy() if copy else df
-    c = uuid.uuid4()
+    c = ""
+    while True:
+        c = uuid.uuid4()
+        if c not in _df.columns:
+            break
     _df[c] = _df.sum(axis=1)
     _df = _df.sort_values(c, ascending=ascending)
     del _df[c]

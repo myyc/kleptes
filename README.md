@@ -7,8 +7,10 @@ Some world data mining goodness.
 to browse.
 * *[OECD](https://www.oecd.org/)* - a complete nightmare. Takes minutes
 to figure out if a dataset has any data.
-* *[World Bank](http://www.worldbank.org/)* - lots of stuff, consistent structure,
-a bit tough to search (will improve on this).
+* *[World Bank](http://www.worldbank.org/)* - lots of stuff, consistent
+structure, a bit tough to search (will improve on this).
+* *[Eurostat](http://ec.europa.eu/eurostat)* - datasets are complete but the
+format is horrible. The two functions provided help a lot.
 
 *Requirements*
 --------------
@@ -39,7 +41,19 @@ who_dataset("GHO", "*suicide*")   # fewer
 who_dataset("GHO", "MH_12").head()   # the thing you were looking for
 
 
-# same stuff for the OECD
+# same-ish stuff for the world bank
+wb_inds("*hdi*")        # get indicators like '*hdi*', find one ...
+wb_dataset("UNDP.HDI.XD", countries=["mz", "za"])
+
+
+# and again for eurostat
+eus_inds("*empl*")                     # loads of stuff!
+eus_inds("*part*time*empl*")           # same
+eus_dataset("lfsq_eppga")              # and a dataset
+
+
+# OECD is a bit more complicated, as the dimension is so complex it deserves
+# an object of its own.
 oecd_inds("*quarterly*")   # search among indicators (so much shit there)
 
 oecd_dims("QNA")                      # get the dimension of said indicator
@@ -50,9 +64,6 @@ oecd_dataset("qna",
              measure="cqr",
              frequency="Q")  # as many kwargs as the dims.
 
-# same-ish stuff for the world bank
-wb_inds("*hdi*")        # get indicators like '*hdi*', find one ...
-wb_dataset("UNDP.HDI.XD", countries=["mz", "za"])
 ```
 
 Remember: *everything should be searchable*.
@@ -60,8 +71,9 @@ Remember: *everything should be searchable*.
 The exposed functions for now are:
 
 * WHO: `who_dataset`, `who_dim` and `who_get` (very low level).
-* OECD: `oecd_dataset`, `oecd_dims`, `oecd_ind`
+* OECD: `oecd_dataset`, `oecd_dims`, `oecd_ind`.
 * World Bank: `wb_inds`, `wb_dataset` and `wb_get`.
+* Eurostat: `eus_inds` and `eus_dataset`.
 
 They serve different purposes so despite the name they don't do
 exactly the same thing (e.g. `who_dim` and `oecd_dims` do different stuff).

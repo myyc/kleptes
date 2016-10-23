@@ -1,10 +1,11 @@
 import json
 import re
-import fnmatch
 
 import pandas as pd
 import requests
 from redis import StrictRedis
+
+from kleptes.utils import EXPIRE, get_re
 
 
 def reformat_numbers(d):
@@ -30,11 +31,11 @@ def lddf(l, full=False):
 
 
 def pmatch(l, pattern):
-    rxp = re.compile(fnmatch.translate(pattern.lower()))
+    rxp = get_re(pattern)
     return [{"label": k["label"],
              "display": k["display"]} for k in l if
-            re.match(rxp, k["label"].lower()) or re.match(rxp, k[
-                "display"].lower())]
+            re.match(rxp, k["label"]) or re.match(rxp, k[
+                "display"])]
 
 
 def parse_ds(ds, names=True):
@@ -68,7 +69,8 @@ def parse_ds(ds, names=True):
     return pd.DataFrame(l)
 
 
-def who_get(string="", filter_=None, force=False, expire=259200, raw=False):
+def who_get(string="", filter_=None, force=False, expire=EXPIRE,
+            raw=False):
     """
     Low-level function to get JSON datasets from the WHO database.
 
@@ -106,7 +108,7 @@ def who_get(string="", filter_=None, force=False, expire=259200, raw=False):
         return j
 
 
-def who_dims(name=None, force=False, expire=259200, full=False):
+def who_dims(name=None, force=False, expire=EXPIRE, full=False):
     """
     Get the dimensions from the WHO database. You can do things like
     `who_dims("*gh*")`.
@@ -128,8 +130,8 @@ def who_dims(name=None, force=False, expire=259200, full=False):
             full)
 
 
-def who_dataset(dim=None, name=None, filter_=None, force=False, expire=259200,
-                raw=False, parse=True, full=False):
+def who_dataset(dim=None, name=None, filter_=None, force=False,
+                expire=EXPIRE, raw=False, parse=True, full=False):
     """
     Get the dataset "dim/name" from the WHO database. The cool thing is that
     you can do pattern search on both dimension and name, although if you do it

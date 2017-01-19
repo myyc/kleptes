@@ -35,7 +35,7 @@ def wb_get(key, expire=EXPIRE, force=False, raw=False):
         if force:
             del r[rkey]
         else:
-            return json.loads(r[key].decode("utf-8"))
+            return json.loads(r[rkey].decode("utf-8"))
 
     l = []
 

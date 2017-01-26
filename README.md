@@ -1,4 +1,4 @@
-kleptes
+κλέπτης
 =======
 
 Some world data mining goodness.
@@ -11,6 +11,7 @@ to figure out if a dataset has any data.
 structure, a bit tough to search (will improve on this).
 * *[Eurostat](http://ec.europa.eu/eurostat)* - datasets are complete but the
 format is horrible. The two functions provided help a lot.
+* *[Yahoo Finance](https://finance.yahoo.com/)* - the usual.
 
 *Requirements*
 --------------
@@ -64,6 +65,10 @@ oecd_dataset("qna",
              measure="cqr",
              frequency="Q")  # as many kwargs as the dims.
 
+
+# Yahoo finance is the usual
+yf_search("Google")                 # search for a symbol ...
+yf_get("GOOGL", days=400)           # get some data
 ```
 
 Remember: *everything should be searchable*.
@@ -74,15 +79,10 @@ The exposed functions for now are:
 * OECD: `oecd_dataset`, `oecd_dims`, `oecd_ind`.
 * World Bank: `wb_inds`, `wb_dataset` and `wb_get`.
 * Eurostat: `eus_inds` and `eus_dataset`.
+* Yahoo Finance: `yh_search` and `yh_get`.
 
 They serve different purposes so despite the name they don't do
 exactly the same thing (e.g. `who_dim` and `oecd_dims` do different stuff).
 
 Everything is cached for a while so you won't be flooding the servers
 unless you want to.
-
-*What's in a name?*
--------------------
-
-"Kleptes" (*κλέπτης*) is an Ancient Greek word for "thief" (think about
-"kleptomania"). Such pretentious much clever very antique.

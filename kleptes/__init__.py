@@ -4,18 +4,20 @@ from .who import who_dataset, who_dims, who_get
 from .oecd import oecd_dataset, oecd_dims, oecd_inds, oecd_md
 from .wb import wb_dataset, wb_inds, wb_get
 from .eurostat import eus_dataset, eus_inds
+from .yf import yf_get, yf_search
 
 import kleptes.goodies
 from ._version import __version__
 
 # you really need this.
-pd.set_option('max_colwidth', 160)
+pd.set_option("max_colwidth", 160)
 
 __all__ = [
     "who_dataset", "who_dims", "who_get",
     "oecd_dataset", "oecd_dims", "oecd_inds",
     "wb_dataset", "wb_inds", "wb_get",
     "eus_dataset", "eus_inds",
+    "yf_get", "yf_search",
     "pd",
     "__version__"
 ]

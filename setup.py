@@ -35,5 +35,5 @@ setup(
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
-    install_requires=["requests", "pandas", "redis", "bs4"],
+    install_requires=["requests", "pandas", "bs4", "mnemon", "pendulum"],
 )

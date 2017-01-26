@@ -1,6 +1,6 @@
-import json
-from redis import StrictRedis
 import itertools
+
+from mnemon import mnc
 import pandas as pd
 import requests
 
@@ -27,15 +27,15 @@ def wb_get(key, expire=EXPIRE, force=False, raw=False):
     It might be worth creating ad hoc data types to optimise search.
     """
 
-    r = StrictRedis()
+    mn = mnc(expire=EXPIRE)
 
     rkey = "WB|{}".format(key)
 
-    if rkey in r:
+    if rkey in mn:
         if force:
-            del r[rkey]
+            del mn[rkey]
         else:
-            return json.loads(r[rkey].decode("utf-8"))
+            return mn[rkey]
 
     l = []
 
@@ -87,8 +87,8 @@ def wb_get(key, expire=EXPIRE, force=False, raw=False):
         if i == n or n == 0:
             break
 
-    r[rkey] = json.dumps(l)
-    r.expire(rkey, expire)
+    mn[rkey] = l
+    mn.expire(rkey, expire)
 
     return l
 

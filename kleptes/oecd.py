@@ -1,9 +1,8 @@
 import re
-import json
 
 import requests
 from bs4 import BeautifulSoup
-from redis import StrictRedis
+from mnemon import mnc
 import pandas as pd
 
 from .utils import SearchableDataFrame, get_re, EXPIRE
@@ -90,16 +89,16 @@ class OECDims:
 def oecd_inds(pattern=None, force=False, expire=EXPIRE, df=True):
     """No way to get the indicators without scraping."""
     key = "OECD|inds"
-    r = StrictRedis()
-    if key in r and not force:
-        l = json.loads(r[key].decode("utf-8"))
+    mn = mnc(expire=EXPIRE)
+    if key in mn and not force:
+        l = mn[key]
     else:
         t = requests.get(BASE_URL + "/").text
         soup = BeautifulSoup(t, "html.parser")
         l = {i["value"].strip(): i.text.strip() for i in
              list(soup.find(id="Datasets").children)[2:] if i != "\n"}
-        r[key] = json.dumps(l)
-        r.expire(key, expire)
+        mn[key] = l
+        mn.expire(key, expire)
     if pattern is not None and pattern != "":
         rxp = get_re(pattern)
         l = {k: l[k] for k in l if
@@ -121,14 +120,14 @@ def oecd_md(pattern, force=False, expire=EXPIRE):
     idx = list(idxs.keys())[0]
     key = "OECD|{}|md".format(idx)
 
-    r = StrictRedis()
+    mn = mnc(exp=EXPIRE)
 
-    if key not in r or force:
+    if key not in mn or force:
         j = requests.get("{}/metadata/{}".format(BASE_URL, idx)).json()
-        r[key] = json.dumps(j)
-        r.expire(key, expire)
+        mn[key] = j
+        mn.expire(key, expire)
     else:
-        j = json.loads(r[key].decode("utf-8"))
+        j = mn[key]
 
     return j
 
@@ -156,14 +155,14 @@ def oecd_dataset(idx, rawstr=None, force=False, expire=EXPIRE, raw=False,
 
     key = "OECD|{}|data".format(rawstr)
 
-    r = StrictRedis()
-    if key not in r or force:
+    mn = mnc(exp=EXPIRE)
+    if key not in mn or force:
         j = requests.get(
             "{}/data/{}/{}/all".format(BASE_URL, idx, rawstr)).json()
-        r[key] = json.dumps(j)
-        r.expire(key, expire)
+        mn[key] = j
+        mn.expire(key, expire)
     else:
-        j = json.loads(r[key].decode("utf-8"))
+        j = mn[key]
     if raw:
         return j
     else:

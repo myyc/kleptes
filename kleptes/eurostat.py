@@ -2,7 +2,7 @@ from io import BytesIO
 import gzip
 
 import pandas as pd
-from redis import StrictRedis
+from mnemon import mnc
 import requests
 import numpy as np
 
@@ -31,13 +31,13 @@ def _eus_proc_tsv(s, key, expire=EXPIRE, force=False):
     with the primary key split accordingly and time as a row index.
     """
     key = "EUS_ds|{}|proc".format(key)
-    r = StrictRedis()
+    mn = mnc(expire=EXPIRE, raw=True)
     if force:
-        if key in r:
-            del r[key]
+        if key in mn:
+            del mn[key]
 
-    if key in r:
-        return pd.read_csv(BytesIO(r[key]), compression="gzip")
+    if key in mn:
+        return pd.read_csv(BytesIO(mn[key]), compression="gzip")
 
     df = None
     ndf = None
@@ -110,24 +110,24 @@ def _eus_proc_tsv(s, key, expire=EXPIRE, force=False):
     ndf.index.names = list(ndf.index.names[:hl]) + ["time"]
     ndf = ndf.to_frame("value").reset_index()
 
-    r[key] = gzip.compress(ndf.to_csv(index=None).encode("utf-8"))
-    r.expire(key, expire)
+    mn[key] = gzip.compress(ndf.to_csv(index=None).encode("utf-8"))
+    mn.expire(key, expire)
 
     return ndf
 
 
 def _eus_get(key, url, expire=EXPIRE, force=False):
-    r = StrictRedis()
+    mn = mnc(expire=EXPIRE, raw=True)
 
     if force:
-        del r[key]
-    if key in r:
-        return r[key]
+        del mn[key]
+    if key in mn:
+        return mn[key]
     else:
         t = requests.get(url).content
-        r[key] = t
-        r.expire(key, expire)
-        return r[key]
+        mn[key] = t
+        mn.expire(key, expire)
+        return mn[key]
 
 
 def eus_inds(k=None, expire=EXPIRE, force=False):

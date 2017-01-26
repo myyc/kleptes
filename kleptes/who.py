@@ -3,7 +3,7 @@ import re
 
 import pandas as pd
 import requests
-from redis import StrictRedis
+from mnemon import mnc
 
 from kleptes.utils import EXPIRE, get_re
 
@@ -84,11 +84,11 @@ def who_get(string="", filter_=None, force=False, expire=EXPIRE,
     filter_ = "&filter={}".format(filter_) if filter_ is not None else ""
     url = "http://apps.who.int/gho/athena/api/{}?format=json{}".format(string,
                                                                        filter_)
-    r = StrictRedis()
+    mn = mnc(expire=EXPIRE, raw=True)
     key = "WHO|{}|{}".format(string, filter_)
 
-    if not force and r.exists(key):
-        t = r.get(key).decode("utf-8")
+    if not force and mn.exists(key):
+        t = mn.get(key)
         if raw:
             return t
         else:
@@ -99,9 +99,9 @@ def who_get(string="", filter_=None, force=False, expire=EXPIRE,
         # to be removed once they fix the API call result
         t = req.text.replace("Radio band\"\"", "Radio band\"")
 
-        r[key] = t
+        mn[key] = t
         if expire is not None:
-            r.expire(key, expire)
+            mn.expire(key, expire)
         if raw:
             return t
         j = json.loads(t)
